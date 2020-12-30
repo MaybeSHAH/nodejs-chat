@@ -1,4 +1,8 @@
-const app = require('express')();
+const express = require('express');
+const app = express();
+const authRoutes = require('./routes/authRoutes');
+app.use(express.json());
+app.use(authRoutes);
 const http = require('http').createServer(app);
 const socketio = require('socket.io');
 const mongoose = require('mongoose');
@@ -7,7 +11,7 @@ const mongoDB = "mongodb+srv://maybeshah:Pass@1234@cluster0.odvsl.mongodb.net/ch
 const io = socketio(http);
 const PORT = process.env.PORT || 5000
 const Room = require('./models/Room');
-
+const Message = require('./models/Message');
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology:true }).then(()=> console.log('connected')).catch(err=> console.log(err));
 
 
@@ -47,8 +51,12 @@ io.on('connection', (socket) => {
       text:message
     }
       console.log('message', msgToStore)
-      io.to(room_id).emit('message',msgToStore);
-      callback()
+      const msg = new Message(msgToStore);
+      msg.save().then(result=>{
+        io.to(room_id).emit('message', result);
+        callback()
+      })
+      
 
   })
   socket.on('disconnect',() =>{

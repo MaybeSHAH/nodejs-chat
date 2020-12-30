@@ -19,6 +19,7 @@ const removeUser= (socket_id)=> {
     }
 }
 const getUser = (socket_id)=> {
-    users.find(user=> user.socket_id === socket_id)
+    const activeUser = users.find(user=> user.socket_id === socket_id)
+    return { activeUser }
 }
 module.exports = { addUser, removeUser, getUser }
