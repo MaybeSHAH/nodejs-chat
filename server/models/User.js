@@ -20,15 +20,23 @@ const userSchema = new mongoose.Schema({
     }
     
 })
-userSchema.pre('save', sync function(next){
+userSchema.pre('save',async function(next){
     const salt = await bcrypt.genSalt();
     this.password = await bcrypt.hash(this.password, salt);
     console.log('before save', this);
     next()
 })
-userSchema.post('save',function(doc,next){
-    console.log('after save', doc);
-    next()
-})
+userSchema.statics.login = async function(email, password){
+    const user = await thsi.findOne({email})
+    if (user){
+        const isAuthenticated = await bcrypt.compare(password, user.password);
+        if(isAuthenticated){
+            return user;
+        }
+        throw Error('Incorrect Password');
+    }else{
+        throw Error('Incorrect Email');
+    }
+}
 const User = mongoose.model('user', userSchema);
 module.exports = User;
